@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression Model Predictor</title>
+    <link rel="stylesheet" href="/static/css/index.css"> <!-- Link to external CSS file -->
+    <style>
+        /* Footer styles */
+        footer {
+            background-color: #043566;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Navigation styles */
+        nav {
+            background-color: #043566;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+        }
+
+        nav a:hover {
+            background-color: #fb5401;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+    </nav>
+    <div class="container">
+        <img id="logo" src="/static/img/logo.jpg" alt="Logo">
+        <h1>Regression Model Predictor</h1>
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <label for="image" class="upload-btn">Select Image</label>
+            <input type="file" name="image" id="image" accept="image/*">
+            <button type="submit" class="predict-btn">Predict</button>
+        </form>
+        <div id="prediction"></div>
+        <img id="image-preview" src="" alt="Image Preview">
+    </div>
+
+    <footer>
+        <p>&copy; 2024 NANOSPEED DIAGNOSTICS. All rights reserved.</p>
+        <p>DELIVERING HIGH QUALITY, ACCURATE AND RAPID POINT OF CARE TESTING</p>
+    </footer>
+
+    <script>
+        document.querySelector('form').onsubmit = async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const imageFile = document.querySelector('input[type="file"]').files[0];
+            formData.append('image', imageFile);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            document.getElementById('prediction').innerText = `Prediction: ${data.prediction}`;
+
+            // Display image preview
+            const imagePreview = document.getElementById('image-preview');
+            imagePreview.src = URL.createObjectURL(imageFile);
+            imagePreview.style.display = 'block';
+        };
+    </script>
+</body>
+
+</html>

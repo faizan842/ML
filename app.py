@@ -5,6 +5,7 @@ from tensorflow.keras.models import load_model
 import joblib
 import os
 import logging
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -24,7 +25,7 @@ except Exception as e:
 def extract_features_from_image(image):
     try:
         img = cv2.resize(image, (256, 256))  # Resize the image to a consistent size
-        img = np.expand_dims(img, axis=0)   # Add batch dimension
+        img = np.expand_dims(img, axis=0)    # Add batch dimension
         img = img / 255.0  # Normalize image data
         features = feature_extractor.predict(img)  # Extract features using pre-trained CNN
         return features
@@ -55,13 +56,15 @@ def crop_image(image):
 # Function to categorize vitamin D level
 def categorize_vitamin_d_level(value):
     if value < 10:
-        return "Deficient"
-    elif 10 <= value < 30:
-        return "Insufficient"
-    elif 30 <= value <= 100:
-        return "Sufficient"
+        return "Severely Deficient", "extremely low"
+    elif 10 <= value < 20:
+        return "Deficient", "low"
+    elif 20 <= value < 33:
+        return "Insufficient", "slightly low"
+    elif 33 <= value <= 100:
+        return "Sufficient", "good"
     else:
-        return "Please reupload the image"
+        return "Consult a doctor", "Please consult a doctor for Vitamin D levels greater than 100 ng/mL"
 
 # Route for predicting a single image
 @app.route('/predict', methods=['POST'])
@@ -89,13 +92,22 @@ def predict():
         # Convert the predicted value to a standard Python float
         predicted_value = float(predicted_value)
 
-        if predicted_value > 100:
-            return jsonify({'Error': 'Please reupload the image'})
+        # Check for out-of-range predictions
+        if predicted_value > 100 or predicted_value < 0:
+            return jsonify({'error': 'Please reupload the image'}), 400
 
         # Categorize the predicted vitamin D level
-        category = categorize_vitamin_d_level(predicted_value)
+        category, message = categorize_vitamin_d_level(predicted_value)
 
-        return jsonify({'predicted_value': predicted_value, 'category': category})
+        # Get the current date and time
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        return jsonify({
+            'predicted_value': predicted_value, 
+            'category': category, 
+            'message': message, 
+            'timestamp': current_time
+        })
     except Exception as e:
         logging.error(f"Error in prediction: {e}")
         return jsonify({'error': str(e)}), 500
@@ -106,4 +118,4 @@ def index():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(use_reloader=False,debug=True, host='0.0.0.0', port=port)
+    app.run(use_reloader=False, debug=True, host='0.0.0.0', port=port)

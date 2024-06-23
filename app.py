@@ -114,7 +114,7 @@ def predict():
     
 @app.route('/')
 def index():
-    return "Welcome to the Vitamin D Level Prediction API!"
+    return "Welcome to the Vitamin D Level Prediction API! "
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

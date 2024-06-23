@@ -40,9 +40,9 @@ def crop_image(image):
         height, width, _ = image.shape
 
         # Define cropping margins
-        left_margin = int(width * 0.46)
-        right_margin = int(width * 0.56)
-        top_margin = int(height * 0.5)
+        left_margin = int(width * 0.444)
+        right_margin = int(width * 0.558)
+        top_margin = int(height * 0.49)
         bottom_margin = int(height * 0.541)
 
         # Crop the image
